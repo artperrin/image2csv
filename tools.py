@@ -1,6 +1,41 @@
 import cv2
 import numpy as np
 
+def imclearborder(imgBW, radius):
+    """ Clear all object that touches the border of one image
+    INPUTS
+        imgBW : source image
+        radius : size of the border
+    OUTPUT
+        imgBWcopy : image in which objects that touched the border have been removed
+
+    This was implemented by Nitish9711 for his Automatic-Number-plate-detection (https://github.com/Nitish9711/Automatic-Number-plate-detection.git)
+    """ 
+    imgBWcopy = imgBW.copy()
+    contours,hierarchy = cv2.findContours(imgBWcopy.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    imgRows = imgBW.shape[0]
+    imgCols = imgBW.shape[1]    
+    contourList = [] 
+
+    for idx in np.arange(len(contours)):
+        cnt = contours[idx]
+
+        for pt in cnt:
+            rowCnt = pt[0][1]
+            colCnt = pt[0][0]
+
+            check1 = (rowCnt >= 0 and rowCnt < radius) or (rowCnt >= imgRows-1-radius and rowCnt < imgRows)
+            check2 = (colCnt >= 0 and colCnt < radius) or (colCnt >= imgCols-1-radius and colCnt < imgCols)
+
+            if check1 or check2:
+                contourList.append(idx)
+                break
+
+    for idx in contourList:
+        cv2.drawContours(imgBWcopy, contours, idx, (0,0,0), -1)
+
+    return imgBWcopy
+
 def pre_process(images,visu,method):
     """ Pre-process the images for Tesseract to do a better job
     INPUTS
@@ -21,6 +56,7 @@ def pre_process(images,visu,method):
 
         imgB = cv2.morphologyEx(imgB, cv2.MORPH_CLOSE, np.ones((2,2)))
         imgB = cv2.erode(imgB, np.ones((4,4)))
+        imgB = imclearborder(imgB,1)
 
         if visu=='y':
             cv2.imshow('before segmentation',imgA)        

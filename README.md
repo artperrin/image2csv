@@ -52,3 +52,7 @@ For the program to run correctly, the input image must verify some hypothesis (j
 * it is recommended to have a good input image resolution, to control the offsets more easily.
 
 At last, this program is not perfect (I know you thought so, with its smooth workflow and simple hypothesis, sorry to disappoint...) and does not work with decimal numbers... But does a great job on negatives ! Also the user must be careful with the slashed zero which seems to be identified by Tesseract as a six.
+
+# Credits
+
+For image pre-processing in the tool.py file I used a useful function implemented by @Nitish9711 for his Automatic-Number-plate-detection (https://github.com/Nitish9711/Automatic-Number-plate-detection.git).
