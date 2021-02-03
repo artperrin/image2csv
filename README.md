@@ -2,7 +2,7 @@
 
 This Python program aims to convert images of array numbers to corresponding .csv files. It uses OpenCV for Python to process the given image and Tesseract for number recognition.
 
-![Output Example](readme_figures/example.png)
+![Output Example](https://raw.githubusercontent.com/artperrin/Image2csv/master/readme_figures/example.PNG)
 
 The repository includes:
 * the source code of image2csv.py ;
@@ -19,15 +19,10 @@ $ python image2csv.py --image path\to\image
 ```
 
 Their are a few optionnal arguments: 
-*   ```sh
-    --path path\to\output\csv\file
-    ```
-*   ```sh
-    --visualization ['y']/n
-    ```
-*   ```sh
-    --method [fast]/denoize
-    ```
+* `--path path\to\output\csv\file`
+* `--visualization [y]/n`
+* `--method [fast]/denoize`
+
 and one can find their usage using the command line:
 ```sh
 $ python image2csv.py --help
