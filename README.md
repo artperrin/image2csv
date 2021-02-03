@@ -13,13 +13,19 @@ The code is not well documented nor fully efficient as I'm a beginner in program
 
 # How to use the program 
 
-In a python terminal, use the command line:
+First of all, the user must install the needed packages:
 ```sh
-$ python image2csv.py --image path\to\image
+$ pip install -r requirements.txt   
+```
+as well as [Tesseract](https://github.com/tesseract-ocr/tesseract).
+
+Then, in a python terminal, use the command line:
+```sh
+$ python image2csv.py --image path/to/image
 ```
 
 Their are a few optionnal arguments: 
-* `--path path\to\output\csv\file`
+* `--path path/to/output/csv/file`
 * `--visualization [y]/n`
 * `--method [fast]/denoize`
 
