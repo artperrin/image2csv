@@ -3,6 +3,7 @@ import cv2
 from tools import draw_region
 from tools import region_creator
 from tools import pre_process
+from tools import to_matrix
 import numpy as np
 import pytesseract
 
@@ -30,7 +31,7 @@ image = cv2.imread(args["image"])
 # create regions to be scanned
 print('[INFO] Extracting regions...')
 boxes = [draw_region(image)]
-boxes = region_creator(image,boxes)
+boxes,lineLenghts = region_creator(image,boxes)
 
 ROI = []
 for i in range(len(boxes)):
@@ -64,7 +65,7 @@ for i in range(len(ROI)):
 		isInt = False
 
 	if not isInt:
-		number = 'error'
+		number = float("inf")
 		NbError += 1
 		numbers.append(number)
 	else:
@@ -80,5 +81,9 @@ for i in range(len(ROI)):
 
 print("[INFO] End of OCR, found "+str(NbError)+" errors out of "+str(len(ROI))+" regions...")
 print("[INFO] Exporting to path : "+args["path"]+'... ')
-(np.array(numbers)).tofile(args["path"]+'output.csv', sep = ',')
-print("[INFO] Ending of export.")
+
+out = to_matrix(numbers,lineLenghts)
+print(out)
+
+np.savetxt(args["path"]+'output.csv', out, delimiter = ',', fmt='%10.3f')
+print("[INFO] Ending of export (and of the script).")

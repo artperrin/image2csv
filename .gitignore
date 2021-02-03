@@ -1,0 +1,8 @@
+pyEnvData
+output
+.vscode
+__pycache__
+output.csv
+region_drawer.py
+testString.jpg
+image2csv_EVAL.py
