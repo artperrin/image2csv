@@ -85,7 +85,17 @@ def pre_process(images, visu, method):
             cv2.destroyAllWindows()
 
         images[i] = imgB
-        print("Pre-processed " + str(i + 1) + " images out of " + str(len(images)))
+
+        progress_line = ''
+
+        for p in range(30):
+            if p <= int((i+1)/len(images)*30):
+                progress_line += '='
+            else:
+                progress_line += '.'
+
+        print(f"{i + 1}/{len(images)} [{progress_line}]", end='\r', flush=True)
+    print('')
     return images
 
 
@@ -233,10 +243,11 @@ def region_creator(img, initBoxes):
             cv2.waitKey(0)
             cv2.destroyAllWindows()
     endBoxes.pop(0)
-    return endBoxes, lineLenghts
+    array_shape = [len(lineLenghts), lineLenghts[0]]
+    return endBoxes, array_shape
 
 
-def to_matrix(el, lineLenghts):
+def to_matrix(el, h, w):
     """Convert a list to a matrix given the number of elements per line
 
     Parameters
@@ -252,8 +263,8 @@ def to_matrix(el, lineLenghts):
         lines of the matrix formed by the elements of the input list
     """
     res = []
-    for i in range(len(lineLenghts)):
-        lineLenght = lineLenghts[i]
+    for i in range(h):
+        lineLenght = w
         temp = []
         for j in range(lineLenght):
             temp.append(el[j + i * lineLenght])

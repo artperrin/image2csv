@@ -18,6 +18,13 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", required=True, type=str, help="path to input image")
 ap.add_argument("-p", "--path", default="./", type=str, help="path to output .csv file")
 ap.add_argument(
+    "-g",
+    "--grid",
+    default=False,
+    type=str,
+    help="True to select manually the boxes of the images",
+)
+ap.add_argument(
     "-v",
     "--visualization",
     default="n",
@@ -44,8 +51,13 @@ image = cv2.imread(args["image"])
 
 # create regions to be scanned
 logging.info("Extracting regions...")
-boxes = [draw_region(image)]
-boxes, lineLenghts = region_creator(image, boxes)
+
+if args["grid"]:
+    boxes = [draw_region(image)]
+    boxes, grid_shape = region_creator(image, boxes)
+else:
+    from grid_detector import detect_grid
+    boxes, grid_shape = detect_grid(image)
 
 ROI = []
 for i in range(len(boxes)):
@@ -87,23 +99,33 @@ for i in range(len(ROI)):
     else:
         numbers.append(number)
 
-    logging.debug(f"OCR applied to {str(i + 1)} regions out of {str(len(ROI))}")
+    progress_line = ''
+
+    for p in range(30):
+        if p <= int((i+1)/len(ROI)*30):
+            progress_line += '='
+        else:
+            progress_line += '.'
+
+    print(f"{i + 1}/{len(ROI)} [{progress_line}]", end='\r', flush=True)
 
     if visu == "y":
+        print('\n')
         print("-----------------------------")
         cv2.imshow("region proceeded (press 0 to close)", region)
         print("res = ", number)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+print('')
 logging.info(
-    f"End of OCR, found{str(NbError)} errors out of {str(len(ROI))} regions..."
+    f"End of OCR, found {NbError} errors out of {len(ROI)} regions..."
 )
 
 # Exporting the results
 logging.info(f"""Exporting to path {args["path"]}...""")
 
-out = to_matrix(numbers, lineLenghts)
+out = to_matrix(numbers, grid_shape[0], grid_shape[1])
 
 np.savetxt(args["path"] + "output.csv", out, delimiter=",", fmt="%10.3f")
 
