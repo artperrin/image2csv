@@ -18,7 +18,7 @@ def imclearborder(imgBW, radius):
         image without the objects touching at least one border of the input image
     """
     imgBWcopy = imgBW.copy()
-    contours, hierarchy = cv2.findContours(
+    contours, trash = cv2.findContours(
         imgBWcopy.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
     )
     (imgRows, imgCols) = imgBW.shape
@@ -70,9 +70,9 @@ def pre_process(images, visu, method):
 
         if method == "denoize":
             imgB = cv2.fastNlMeansDenoising(imgA, None, 20)
-            temp, imgB = cv2.threshold(imgB, 190, 255, cv2.THRESH_BINARY_INV)
+            trash, imgB = cv2.threshold(imgB, 190, 255, cv2.THRESH_BINARY_INV)
         else:
-            temp, imgB = cv2.threshold(imgA, 190, 255, cv2.THRESH_BINARY_INV)
+            trash, imgB = cv2.threshold(imgA, 190, 255, cv2.THRESH_BINARY_INV)
 
         imgB = cv2.morphologyEx(imgB, cv2.MORPH_CLOSE, np.ones((2, 2)))
         imgB = cv2.erode(imgB, np.ones((4, 4)))
@@ -86,16 +86,16 @@ def pre_process(images, visu, method):
 
         images[i] = imgB
 
-        progress_line = ''
+        progress_line = ""
 
         for p in range(30):
-            if p <= int((i+1)/len(images)*30):
-                progress_line += '='
+            if p <= int((i + 1) / len(images) * 30):
+                progress_line += "="
             else:
-                progress_line += '.'
+                progress_line += "."
 
-        print(f"{i + 1}/{len(images)} [{progress_line}]", end='\r', flush=True)
-    print('')
+        print(f"{i + 1}/{len(images)} [{progress_line}]", end="\r", flush=True)
+    print("")
     return images
 
 

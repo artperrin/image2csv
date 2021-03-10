@@ -1,16 +1,17 @@
-import argparse
-import cv2
 from tools import draw_region
 from tools import region_creator
 from tools import pre_process
 from tools import to_matrix
 import numpy as np
+import argparse
+import cv2
 import pytesseract
 import logging
+import time
 
 logging.getLogger().setLevel(logging.INFO)
 
-# internal parameters
+# internal parameters to resize the region before giving it to Tesseract
 window_maximizer = 6
 
 # construct the argument parser and parse the arguments
@@ -40,9 +41,9 @@ ap.add_argument(
 )
 args = vars(ap.parse_args())
 
-
 visu = args["visualization"]
 
+start = time.time()
 logging.info("Beginning of the script...")
 
 # load the input image from disk
@@ -52,11 +53,12 @@ image = cv2.imread(args["image"])
 # create regions to be scanned
 logging.info("Extracting regions...")
 
-if args["grid"]:
+if args["grid"]:  # use manual grid detection
     boxes = [draw_region(image)]
     boxes, grid_shape = region_creator(image, boxes)
-else:
+else:  # by default, perform automatic grid detection
     from grid_detector import detect_grid
+
     boxes, grid_shape = detect_grid(image)
 
 ROI = []
@@ -80,18 +82,21 @@ ROI = pre_process(ROI, visu, args["method"])
 # Give regions to machine learning model in order to be classified
 logging.info(f"Applying OCR to the regions...")
 custom_config = r"--oem 0 --psm 6"
+# see Tesseract's documentation for more info (command line: $ tesseract --help-oem ; $ tesseract --help-psm)
 numbers = []
 NbError = 0
 for i in range(len(ROI)):
     region = ROI[i]
     number = pytesseract.image_to_string(region, config=custom_config)
 
+    # test if the string can be casted into float
     isInt = True
     try:
-        number = int(number)
+        number = float(number)
     except ValueError:
         isInt = False
 
+    # if the detection cannot be casted, it is an error
     if not isInt:
         number = float("inf")
         NbError += 1
@@ -99,28 +104,28 @@ for i in range(len(ROI)):
     else:
         numbers.append(number)
 
-    progress_line = ''
+    # draw a progress line
+    progress_line = ""
 
     for p in range(30):
-        if p <= int((i+1)/len(ROI)*30):
-            progress_line += '='
+        if p <= int((i + 1) / len(ROI) * 30):
+            progress_line += "="
         else:
-            progress_line += '.'
+            progress_line += "."
 
-    print(f"{i + 1}/{len(ROI)} [{progress_line}]", end='\r', flush=True)
+    print(f"{i + 1}/{len(ROI)} [{progress_line}]", end="\r", flush=True)
 
+    # if wanted, show the extracted region and print the detection in the terminal
     if visu == "y":
-        print('\n')
+        print("\n")
         print("-----------------------------")
         cv2.imshow("region proceeded (press 0 to close)", region)
         print("res = ", number)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-print('')
-logging.info(
-    f"End of OCR, found {NbError} errors out of {len(ROI)} regions..."
-)
+print("")
+logging.info(f"End of OCR, found {NbError} errors out of {len(ROI)} regions...")
 
 # Exporting the results
 logging.info(f"""Exporting to path {args["path"]}...""")
@@ -129,4 +134,4 @@ out = to_matrix(numbers, grid_shape[0], grid_shape[1])
 
 np.savetxt(args["path"] + "output.csv", out, delimiter=",", fmt="%10.3f")
 
-logging.info("Ending of export (and of the script).")
+logging.info(f"Ending of the script within {round(time.time()-start, 2)} seconds.")
